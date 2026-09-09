@@ -1,50 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useActionState } from "react";
+import { signInAction } from "@/actions/auth";
+import { ActionToast } from "@/components/providers/action-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-
-    const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "");
-    const password = String(formData.get("password") ?? "");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    setPending(false);
-
-    if (error) {
-      toast.error(`Nao foi possivel entrar: ${error.message}`);
-      return;
-    }
-
-    toast.success("Login realizado.");
-    router.replace("/dashboard");
-    router.refresh();
-  }
+  const [state, formAction, pending] = useActionState(signInAction, { ok: false, message: "" });
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+      <ActionToast state={state} />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Entrar</CardTitle>
           <CardDescription>Acesse sua operacao de impressao 3D.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4">
+          <form action={formAction} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" name="email" type="email" autoComplete="email" required />
