@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [pending, setPending] = useState(false);
@@ -24,14 +23,18 @@ export default function LoginPage() {
       const formData = new FormData(event.currentTarget);
       const email = String(formData.get("email") ?? "");
       const password = String(formData.get("password") ?? "");
-      const supabase = createClient();
-      const { error } = await Promise.race([
-        supabase.auth.signInWithPassword({ email, password }),
+      const response = await Promise.race([
+        fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }),
         timeout,
       ]);
+      const result = await response.json().catch(() => ({}));
 
-      if (error) {
-        toast.error(`Nao foi possivel entrar: ${error.message}`);
+      if (!response.ok) {
+        toast.error(result.error ?? "Nao foi possivel entrar.");
         return;
       }
 
