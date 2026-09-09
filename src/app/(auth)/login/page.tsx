@@ -1,27 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
-import { signInAction } from "@/actions/auth";
-import { ActionToast } from "@/components/providers/action-toast";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const [state, formAction, pending] = useActionState(signInAction, { ok: false, message: "" });
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+
+    const timeout = new Promise<never>((_, reject) => {
+      window.setTimeout(() => reject(new Error("Tempo esgotado ao tentar entrar. Recarregue e tente novamente.")), 15000);
+    });
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const email = String(formData.get("email") ?? "");
+      const password = String(formData.get("password") ?? "");
+      const supabase = createClient();
+      const { error } = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        timeout,
+      ]);
+
+      if (error) {
+        toast.error(`Nao foi possivel entrar: ${error.message}`);
+        return;
+      }
+
+      toast.success("Login realizado.");
+      window.location.assign("/dashboard");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Nao foi possivel entrar.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <ActionToast state={state} />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Entrar</CardTitle>
           <CardDescription>Acesse sua operacao de impressao 3D.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={formAction} className="grid gap-4">
+          <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" name="email" type="email" autoComplete="email" required />
