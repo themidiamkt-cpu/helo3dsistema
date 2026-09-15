@@ -4,7 +4,7 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     app: "Mimagi 3D",
-    modules: ["ops", "minerador-3d"],
+    modules: ["ops"],
     timestamp: new Date().toISOString(),
   });
 }

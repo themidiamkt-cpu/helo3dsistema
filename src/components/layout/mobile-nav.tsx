@@ -9,13 +9,10 @@ import { cn } from "@/lib/utils";
 
 const links = [
   "/dashboard",
-  "/minerador",
   "/precificacao",
   "/produtos",
-  "/producao",
   "/vendas",
   "/pontos-de-venda",
-  "/bling",
   "/estoque",
   "/filamentos",
   "/componentes",

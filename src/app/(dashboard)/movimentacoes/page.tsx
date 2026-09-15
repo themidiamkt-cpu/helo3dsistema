@@ -4,9 +4,9 @@ import { formatCurrency, formatDateTime, formatDecimal } from "@/lib/formatters"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const MOVEMENT_LABELS: Record<string, string> = {
-  production_consumption: "Consumo na producao",
-  production_output: "Entrada de producao",
-  production_loss: "Perda de producao",
+  production_consumption: "Consumo de estoque",
+  production_output: "Entrada de estoque",
+  production_loss: "Perda de estoque",
   loss: "Perda",
   printed_part_output: "Entrada de parte impressa",
   assembly_consumption: "Saida para montagem",

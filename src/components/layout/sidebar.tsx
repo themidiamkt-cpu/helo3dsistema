@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Box, Calculator, Factory, FileSpreadsheet, Gauge, Home, Layers3, MapPin, Package, Printer, ReceiptText, Search, Settings, Shirt, TableProperties } from "lucide-react";
+import { Box, Calculator, Gauge, Home, Layers3, MapPin, Package, Printer, ReceiptText, Settings, Shirt, TableProperties } from "lucide-react";
 import { signOutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
@@ -8,13 +8,10 @@ import { ThemeToggle } from "./theme-toggle";
 
 const items = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/minerador", label: "Minerador", icon: Search },
   { href: "/precificacao", label: "Precificacao", icon: Calculator },
   { href: "/produtos", label: "Produtos", icon: Package },
-  { href: "/producao", label: "Producao", icon: Factory },
   { href: "/vendas", label: "Vendas", icon: ReceiptText },
   { href: "/pontos-de-venda", label: "Pontos de Venda", icon: MapPin },
-  { href: "/bling", label: "Bling", icon: FileSpreadsheet },
   { href: "/estoque", label: "Estoque", icon: Layers3 },
   { href: "/filamentos", label: "Filamentos", icon: Shirt },
   { href: "/componentes", label: "Componentes", icon: Box },

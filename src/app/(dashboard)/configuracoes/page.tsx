@@ -14,10 +14,10 @@ export default async function SettingsPage() {
         submitLabel="Salvar configuracoes"
         modal={false}
         fields={[
-          { name: "energy_cost_per_kwh", label: "Energia R$/kWh", type: "number", defaultValue: settings?.energy_cost_per_kwh ?? 1.1 },
-          { name: "default_labor_cost_per_hour", label: "Mao de obra/h", type: "number", defaultValue: settings?.default_labor_cost_per_hour ?? 0 },
-          { name: "default_waste_percentage", label: "Desperdicio %", type: "number", defaultValue: settings?.default_waste_percentage ?? 5 },
-          { name: "default_markup", label: "Markup", type: "number", defaultValue: settings?.default_markup ?? 2.5 },
+          { name: "energy_cost_per_kwh", label: "Energia R$/kWh", type: "number", step: "any", min: 0, defaultValue: settings?.energy_cost_per_kwh ?? 1.1 },
+          { name: "default_labor_cost_per_hour", label: "Mao de obra/h", type: "number", step: "any", min: 0, defaultValue: settings?.default_labor_cost_per_hour ?? 0 },
+          { name: "default_waste_percentage", label: "Desperdicio %", type: "number", step: "any", min: 0, max: 100, defaultValue: settings?.default_waste_percentage ?? 5 },
+          { name: "default_markup", label: "Markup", type: "number", step: "any", min: 0.000001, defaultValue: settings?.default_markup ?? 2.5 },
         ]}
       />
     </PageShell>

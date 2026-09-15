@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export type FormField =
-  | { name: string; label: string; kind?: "input"; type?: string; placeholder?: string; defaultValue?: string | number }
+  | { name: string; label: string; kind?: "input"; type?: string; placeholder?: string; defaultValue?: string | number; min?: string | number; max?: string | number; step?: string | number }
   | { name: string; label: string; kind: "textarea"; placeholder?: string; defaultValue?: string | number }
   | { name: string; label: string; kind: "select"; options: readonly (string | { label: string; value: string })[]; defaultValue?: string };
 
@@ -61,7 +61,7 @@ export function SimpleFormCard({
           ) : field.kind === "textarea" ? (
             <Textarea id={field.name} name={field.name} placeholder={field.placeholder} defaultValue={field.defaultValue} />
           ) : (
-            <Input id={field.name} name={field.name} type={field.type ?? "text"} placeholder={field.placeholder} defaultValue={field.defaultValue} />
+            <Input id={field.name} name={field.name} type={field.type ?? "text"} placeholder={field.placeholder} defaultValue={field.defaultValue} min={field.min} max={field.max} step={field.step} />
           )}
         </div>
       ))}

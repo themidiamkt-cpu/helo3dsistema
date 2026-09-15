@@ -18,6 +18,10 @@ type Settings = Database["public"]["Tables"]["organization_settings"]["Row"] | n
 const selectClassName =
   "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
+function formatMarkup(value: number) {
+  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 6 }).format(value);
+}
+
 export function PricingSimulator({
   filaments,
   supplies,
@@ -129,7 +133,7 @@ export function PricingSimulator({
             </div>
             <div className="grid gap-2">
               <Label>Markup</Label>
-              <Input type="number" step="0.1" value={markup} onChange={(event) => setMarkup(Math.max(0.1, Number(event.target.value)))} />
+              <Input type="number" step="any" min={0.000001} value={markup} onChange={(event) => setMarkup(Math.max(0.000001, Number(event.target.value)))} />
             </div>
           </div>
           <div className="grid gap-3">
@@ -192,7 +196,7 @@ export function PricingSimulator({
             <TableBody>
               {result.markupOptions.map((option) => (
                 <TableRow key={option.markup}>
-                  <TableCell>{formatDecimal(option.markup, 1)}</TableCell>
+                  <TableCell>{formatMarkup(option.markup)}</TableCell>
                   <TableCell>{formatCurrency(option.unitPrice)}</TableCell>
                   <TableCell>{formatDecimal(option.salesMarginPercentage)}%</TableCell>
                 </TableRow>

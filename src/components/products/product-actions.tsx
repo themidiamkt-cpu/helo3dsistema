@@ -52,6 +52,8 @@ export function ProductActions({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [printTimeHours, setPrintTimeHours] = useState(() => Math.floor(product.print_time_minutes / 60));
+  const [printTimeMinutes, setPrintTimeMinutes] = useState(() => product.print_time_minutes % 60);
   const [partLines, setPartLines] = useState<PartLine[]>(() => {
     const parts = getProductParts(product);
     const linkedFilaments = productFilaments.filter((item) => item.product_id === product.id);
@@ -142,6 +144,7 @@ export function ProductActions({
               <input type="hidden" name="part_details" value={partDetailsPayload} />
               <input type="hidden" name="filaments" value={filamentsPayload} />
               <input type="hidden" name="supplies" value={suppliesPayload} />
+              <input type="hidden" name="print_time_minutes" value={Math.max(1, Math.round(printTimeHours * 60 + printTimeMinutes))} />
               <div className="grid gap-2"><Label>Nome</Label><Input name="name" defaultValue={product.name} required /></div>
               <div className="grid gap-2"><Label>SKU</Label><Input name="sku" defaultValue={product.sku ?? ""} /></div>
               <div className="grid gap-2"><Label>Categoria</Label><Input name="category" defaultValue={product.category ?? ""} /></div>
@@ -156,7 +159,13 @@ export function ProductActions({
                     ))}
                 </select>
               </div>
-              <div className="grid gap-2"><Label>Tempo total (min)</Label><Input name="print_time_minutes" type="number" defaultValue={product.print_time_minutes} required /></div>
+              <div className="grid gap-2">
+                <Label>Tempo total</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input type="number" value={printTimeHours} min={0} placeholder="Horas" aria-label="Horas de impressao" onChange={(event) => setPrintTimeHours(Math.max(0, Number(event.target.value)))} required />
+                  <Input type="number" value={printTimeMinutes} min={0} max={59} placeholder="Minutos" aria-label="Minutos de impressao" onChange={(event) => setPrintTimeMinutes(Math.max(0, Math.min(59, Number(event.target.value))))} required />
+                </div>
+              </div>
               <div className="grid gap-2"><Label>Quantidade por lote</Label><Input name="batch_quantity" type="number" defaultValue={product.batch_quantity} required /></div>
               <div className="grid gap-2"><Label>Embalagem</Label><Input name="packaging_cost" type="number" step="0.01" defaultValue={product.packaging_cost} required /></div>
               <div className="grid gap-2"><Label>Mao de obra fixa</Label><Input name="fixed_labor_cost" type="number" step="0.01" defaultValue={product.fixed_labor_cost} required /></div>
@@ -171,7 +180,7 @@ export function ProductActions({
                   <Button type="button" size="sm" variant="outline" onClick={() => setPartLines((current) => [...current, createPartLine(current.length, filaments[0]?.id ?? "")])}>Adicionar parte</Button>
                 </div>
                 {partLines.map((line, index) => (
-                  <div key={line.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_130px_130px_40px] sm:items-end">
+                  <div key={line.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_130px_180px_40px] sm:items-end">
                     <div className="grid gap-1">
                       <Label className="text-xs">Nome da parte {index + 1}</Label>
                       <Input value={line.name} onChange={(event) => setPartLines((current) => current.map((item) => (item.id === line.id ? { ...item, name: event.target.value } : item)))} />
@@ -188,8 +197,19 @@ export function ProductActions({
                       <Input type="number" step="0.01" min={0} value={line.weightGrams} onChange={(event) => setPartLines((current) => current.map((item) => (item.id === line.id ? { ...item, weightGrams: Number(event.target.value) } : item)))} />
                     </div>
                     <div className="grid gap-1">
-                      <Label className="text-xs">Tempo (min)</Label>
-                      <Input type="number" step="1" min={0} value={line.printTimeMinutes} onChange={(event) => setPartLines((current) => current.map((item) => (item.id === line.id ? { ...item, printTimeMinutes: Number(event.target.value) } : item)))} />
+                      <Label className="text-xs">Tempo</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input type="number" step="1" min={0} value={Math.floor(line.printTimeMinutes / 60)} placeholder="h" aria-label={`Horas da parte ${index + 1}`} onChange={(event) => {
+                          const hours = Math.max(0, Number(event.target.value));
+                          const minutes = line.printTimeMinutes % 60;
+                          setPartLines((current) => current.map((item) => (item.id === line.id ? { ...item, printTimeMinutes: hours * 60 + minutes } : item)));
+                        }} />
+                        <Input type="number" step="1" min={0} max={59} value={line.printTimeMinutes % 60} placeholder="min" aria-label={`Minutos da parte ${index + 1}`} onChange={(event) => {
+                          const hours = Math.floor(line.printTimeMinutes / 60);
+                          const minutes = Math.max(0, Math.min(59, Number(event.target.value)));
+                          setPartLines((current) => current.map((item) => (item.id === line.id ? { ...item, printTimeMinutes: hours * 60 + minutes } : item)));
+                        }} />
+                      </div>
                     </div>
                     <Button type="button" size="icon" variant="ghost" aria-label="Remover parte" onClick={() => setPartLines((current) => current.filter((item) => item.id !== line.id))}>
                       <Trash2 className="size-4" />

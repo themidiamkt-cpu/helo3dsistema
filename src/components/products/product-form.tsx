@@ -51,7 +51,8 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
   const [lines, setLines] = useState<PartLine[]>([createLine(0, filaments[0]?.id ?? "")]);
   const [supplyLines, setSupplyLines] = useState<SupplyLine[]>([]);
   const [printerId, setPrinterId] = useState(printers[0]?.id ?? "");
-  const [printTimeMinutes, setPrintTimeMinutes] = useState(60);
+  const [printTimeHours, setPrintTimeHours] = useState(1);
+  const [printTimeMinutes, setPrintTimeMinutes] = useState(0);
   const [batchQuantity, setBatchQuantity] = useState(1);
   const [packagingCost, setPackagingCost] = useState(0);
   const [fixedLaborCost, setFixedLaborCost] = useState(0);
@@ -109,7 +110,7 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
       const supply = supplies.find((item) => item.id === line.supplyId);
       return { quantity: safeNumber(line.quantity), unitCost: supply?.unit_cost ?? 0 };
     }),
-    printTimeMinutes: safeNumber(printTimeMinutes),
+    printTimeMinutes: safeNumber(printTimeHours) * 60 + safeNumber(printTimeMinutes),
     batchQuantity: Math.max(1, Math.round(safeNumber(batchQuantity))),
     packagingCost: safeNumber(packagingCost),
     fixedLaborCost: safeNumber(fixedLaborCost),
@@ -120,7 +121,7 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
     printerPowerWatts: selectedPrinter?.power_watts ?? DEFAULT_SETTINGS.printerPowerWatts,
     wastePercentage: settings?.default_waste_percentage ?? DEFAULT_SETTINGS.wastePercentage,
     markup: settings?.default_markup ?? DEFAULT_SETTINGS.markup,
-  }), [batchQuantity, filaments, fixedLaborCost, laborTimeMinutes, lines, packagingCost, printTimeMinutes, selectedPrinter, settings, supplies, supplyLines]);
+  }), [batchQuantity, filaments, fixedLaborCost, laborTimeMinutes, lines, packagingCost, printTimeHours, printTimeMinutes, selectedPrinter, settings, supplies, supplyLines]);
   const validFilamentLines = lines
     .map((line) => {
       const filament = filaments.find((item) => item.id === line.filamentId);
@@ -153,6 +154,7 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
             <input type="hidden" name="part_details" value={payloads.partDetails} />
             <input type="hidden" name="filaments" value={payloads.filaments} />
             <input type="hidden" name="supplies" value={payloads.supplies} />
+            <input type="hidden" name="print_time_minutes" value={Math.max(1, Math.round(safeNumber(printTimeHours) * 60 + safeNumber(printTimeMinutes)))} />
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="grid gap-2"><Label>Nome</Label><Input name="name" placeholder="Brinquedo clicker" required /></div>
               <div className="grid gap-2"><Label>SKU</Label><Input name="sku" /></div>
@@ -168,7 +170,13 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
                   ))}
                 </select>
               </div>
-              <div className="grid gap-2"><Label>Tempo total (min)</Label><Input name="print_time_minutes" type="number" value={printTimeMinutes} min={1} onChange={(event) => setPrintTimeMinutes(Number(event.target.value))} required /></div>
+              <div className="grid gap-2">
+                <Label>Tempo total</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input type="number" value={printTimeHours} min={0} placeholder="Horas" aria-label="Horas de impressao" onChange={(event) => setPrintTimeHours(Math.max(0, Number(event.target.value)))} required />
+                  <Input type="number" value={printTimeMinutes} min={0} max={59} placeholder="Minutos" aria-label="Minutos de impressao" onChange={(event) => setPrintTimeMinutes(Math.max(0, Math.min(59, Number(event.target.value))))} required />
+                </div>
+              </div>
               <div className="grid gap-2"><Label>Quantidade por lote</Label><Input name="batch_quantity" type="number" value={batchQuantity} min={1} onChange={(event) => setBatchQuantity(Math.max(1, Number(event.target.value)))} required /></div>
               <div className="grid gap-2"><Label>Custo de embalagem</Label><Input name="packaging_cost" type="number" step="0.01" value={packagingCost} onChange={(event) => setPackagingCost(Number(event.target.value))} /></div>
               <div className="grid gap-2"><Label>Mao de obra fixa</Label><Input name="fixed_labor_cost" type="number" step="0.01" value={fixedLaborCost} onChange={(event) => setFixedLaborCost(Number(event.target.value))} /></div>
@@ -188,7 +196,7 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
                 </Button>
               </div>
               {lines.map((line, index) => (
-                <div key={line.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_130px_130px_40px] sm:items-end">
+                <div key={line.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_130px_180px_40px] sm:items-end">
                   <div className="grid gap-1">
                     <Label htmlFor={`part-name-${line.id}`} className="text-xs">Nome da parte {index + 1}</Label>
                     <Input id={`part-name-${line.id}`} value={line.name} placeholder="Ex.: base, tampa, dino amarelo" onChange={(event) => setLines((current) => current.map((item) => (item.id === line.id ? { ...item, name: event.target.value } : item)))} />
@@ -205,8 +213,19 @@ export function ProductForm({ printers, filaments, supplies, settings }: { print
                     <Input id={`part-weight-${line.id}`} type="number" step="0.01" min={0} value={line.weightGrams} onChange={(event) => setLines((current) => current.map((item) => (item.id === line.id ? { ...item, weightGrams: Number(event.target.value) } : item)))} />
                   </div>
                   <div className="grid gap-1">
-                    <Label htmlFor={`part-time-${line.id}`} className="text-xs">Tempo (min)</Label>
-                    <Input id={`part-time-${line.id}`} type="number" step="1" min={0} value={line.printTimeMinutes} onChange={(event) => setLines((current) => current.map((item) => (item.id === line.id ? { ...item, printTimeMinutes: Number(event.target.value) } : item)))} />
+                    <Label htmlFor={`part-time-hours-${line.id}`} className="text-xs">Tempo</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input id={`part-time-hours-${line.id}`} type="number" step="1" min={0} value={Math.floor(line.printTimeMinutes / 60)} placeholder="h" aria-label={`Horas da parte ${index + 1}`} onChange={(event) => {
+                        const hours = Math.max(0, Number(event.target.value));
+                        const minutes = line.printTimeMinutes % 60;
+                        setLines((current) => current.map((item) => (item.id === line.id ? { ...item, printTimeMinutes: hours * 60 + minutes } : item)));
+                      }} />
+                      <Input type="number" step="1" min={0} max={59} value={line.printTimeMinutes % 60} placeholder="min" aria-label={`Minutos da parte ${index + 1}`} onChange={(event) => {
+                        const hours = Math.floor(line.printTimeMinutes / 60);
+                        const minutes = Math.max(0, Math.min(59, Number(event.target.value)));
+                        setLines((current) => current.map((item) => (item.id === line.id ? { ...item, printTimeMinutes: hours * 60 + minutes } : item)));
+                      }} />
+                    </div>
                   </div>
                   <Button type="button" size="icon" variant="ghost" aria-label="Remover parte" onClick={() => setLines((current) => current.filter((item) => item.id !== line.id))}>
                     <Trash2 className="size-4" />

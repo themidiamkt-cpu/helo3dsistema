@@ -869,7 +869,7 @@ export async function createProductionOrderAction(formData: FormData): Promise<M
   });
   const { error: orderFilamentsError } = await supabase.from("production_order_filaments").insert(orderFilamentPayload);
   if (orderFilamentsError) return { ok: false, message: orderFilamentsError.message };
-  revalidatePath("/producao");
+  revalidatePath("/estoque");
   return { ok: true, message: "Ordem criada." };
 }
 
@@ -900,7 +900,7 @@ export async function updateProductionOrderAction(formData: FormData): Promise<M
     .eq("id", id)
     .eq("organization_id", profile.organization_id);
   if (error) return { ok: false, message: error.message };
-  revalidatePath("/producao");
+  revalidatePath("/estoque");
   return { ok: true, message: "Ordem atualizada." };
 }
 
@@ -947,7 +947,7 @@ export async function duplicateProductionOrderAction(id: string): Promise<Mutati
     );
   }
 
-  revalidatePath("/producao");
+  revalidatePath("/estoque");
   return { ok: true, message: "Ordem duplicada." };
 }
 
@@ -1146,7 +1146,7 @@ export async function deleteProductionOrderAction(id: string): Promise<MutationR
     .eq("id", id)
     .eq("organization_id", profile.organization_id);
   if (error) return { ok: false, message: error.message };
-  revalidatePath("/producao");
+  revalidatePath("/estoque");
   revalidatePath("/filamentos");
   revalidatePath("/componentes");
   revalidatePath("/produtos");
@@ -1175,8 +1175,8 @@ export async function startProductionOrderAction(orderId: string): Promise<Mutat
     .eq("organization_id", profile.organization_id);
   if (error) return { ok: false, message: error.message };
   if (order.printer_id) await supabase.from("printers").update({ status: "printing" }).eq("id", order.printer_id).eq("organization_id", profile.organization_id);
-  revalidatePath("/producao");
-  return { ok: true, message: "Producao iniciada." };
+  revalidatePath("/estoque");
+  return { ok: true, message: "Operacao iniciada." };
 }
 
 export async function finishProductionOrderAction(formData: FormData): Promise<MutationResult> {
@@ -1295,7 +1295,7 @@ export async function finishProductionOrderAction(formData: FormData): Promise<M
   }
 
   let actualMaterialCost = 0;
-  const failureNote = failedQuantity > 0 ? `${failedQuantity} unidade(s) perdida(s) nesta producao.` : "";
+  const failureNote = failedQuantity > 0 ? `${failedQuantity} unidade(s) perdida(s) neste lancamento.` : "";
   const finalNotes = [notes, failureNote].filter(Boolean).join(" ");
   for (const line of orderFilaments) {
     const { data: filament, error: filamentError } = await admin
@@ -1492,7 +1492,7 @@ export async function finishProductionOrderAction(formData: FormData): Promise<M
         .eq("id", order.printer_id);
     }
   }
-  revalidatePath("/producao");
+  revalidatePath("/estoque");
   revalidatePath("/estoque");
   return { ok: true, message: "Ordem finalizada com estoque atualizado." };
 }
@@ -1572,7 +1572,7 @@ export async function assembleProductAction(formData: FormData): Promise<Mutatio
   });
   if (productMovementError) return { ok: false, message: productMovementError.message };
 
-  revalidatePath("/producao");
+  revalidatePath("/estoque");
   revalidatePath("/componentes");
   revalidatePath("/produtos");
   revalidatePath("/estoque");

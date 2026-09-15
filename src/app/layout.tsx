@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Mimagi 3D",
-  description: "Precificacao, producao e estoque para impressao 3D",
+  description: "Precificacao, vendas e estoque para impressao 3D",
 };
 
 export default function RootLayout({
